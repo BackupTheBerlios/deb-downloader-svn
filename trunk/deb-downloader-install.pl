@@ -525,7 +525,12 @@ sub just_copy_files() {
 	if (length($deb_downloader_options{'file'}) == 0) {
    	   print("Uris file has not been filled.\n");
 	   return 0;
-	}		
+	}
+
+	# Checking if --skip action option is activated.
+	if ($deb_downloader_options{'skip-action'} == YES) {
+   	   print("There is not action to skip. You are only copying the files\n");
+	}
 	
     # Obtaining uris from file (we have not another source from taking the uris).
 	@uris_to_copy = obtain_uris(read_file($deb_downloader_options{'file'}));		
