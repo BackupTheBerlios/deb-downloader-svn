@@ -6,7 +6,7 @@ Corregir l'error del nom de gravació de l'arxiu.
 Intentar que funcioni amb un proxy al mig.
 Poder fer build per dist-upgrade i install. --> Fet !!!!!
 Poder fer install per dist-upgrade i install. --> Fet !!!!!
-Comentar millor el codi ara que està partit en tres.
+Comentar millor el codi ara que està partit en tres. --> Fet !!!!!
 Repassar la modificacio que he fet rapid i corrent dels arxius ja baixats.
 Incloure comprovacio de checksum (fer tests).
 Mirar si els arxius de resum es poder recpuerar amb un apt-get update --print-uris enlloc de fer-ho tal i con es fa ara.

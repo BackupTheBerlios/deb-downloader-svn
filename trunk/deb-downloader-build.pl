@@ -121,7 +121,7 @@ sub debug_print($) {
 }
 
 #
-# Exiting from deb-downloader.
+# Exiting from deb-downloader (normal and abnormal ending).
 #
 sub deb_downloader_exit($) {
 
