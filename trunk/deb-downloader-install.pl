@@ -6,7 +6,7 @@
 #	Utility for downloading packages in a computer with no Debian 
 #       installed and apt-get then in our favourite flavour of Debian.
 #
-# Copyright (C) 2004 Miquel Oliete <miquel@users.berlios.de>
+# Copyright (C) 2004 Miquel Oliete <debdownloader@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -56,7 +56,7 @@ use File::Copy;
 ###############################################################################
 
 use constant NAME => "deb-downloader-install";
-use constant MAIL => "miquel\@users.berlios.de";
+use constant MAIL => "debdownloader\@gmail.com";
 use constant VERSION => "0.3.1";
 use constant YES => "Y";
 use constant NO=> "N";
@@ -376,25 +376,6 @@ sub is_debian_and_is_ready() {
 }
 
 #
-# Validations done before install Debian packages.
-#
-sub validations_install_OK() {
-
-	my $user;
-
-	if (!common_validations()) {
-		return 0;
-	}
-
-	if (!is_debian_and_is_ready()) {
-		return 0;
-	}
-
-	return 1;
-
-}
-
-#
 # Installing .deb files in our computer.
 #
 sub install_packages {
@@ -404,30 +385,27 @@ sub install_packages {
 	my @uris_to_copy;
 
 
-    # Checking if all information is available.
-	if (!validations_install_OK()) {
+    # Checking available data.
+	if (!common_validations()) {
 		return 0;
 	}
 
-	# Getting the needed uris ...
-	if (length($deb_downloader_options{'file'}) == 0) { # if file is not provided (using apt-get).
-		debug_print("Action --> /usr/bin/apt-get install $deb_downloader_options{'install'} --assume-yes --print-uris \n");
-		# Getting all the needed uris using apt-get install whatever.                
-		$RC = system("/usr/bin/apt-get install $deb_downloader_options{'install'} --assume-yes --print-uris  > " . URI_FILE);
-		if ($RC ne "0") {
-				unlink URI_FILE;
-				print("Error getting packages list. Check it manually.\n");
-				return 0;
-		}
+	if (!is_debian_and_is_ready()) {
+		return 0;
+	}
 
-		# Obtaining all the needed uris and removing the temporal file.
-		debug_print("Uris --> " . read_file(URI_FILE)  . "\n");
-		@uris_to_copy = obtain_uris(read_file(URI_FILE));
-		unlink URI_FILE;		
+	# Getting all the needed uris using apt-get install whatever.                
+	$RC = system("/usr/bin/apt-get install $deb_downloader_options{'install'} --assume-yes --print-uris  > " . URI_FILE);
+	if ($RC ne "0") {
+			unlink URI_FILE;
+			print("Error getting packages list. Check it manually.\n");
+			return 0;
 	}
-	else { # if filename is provided (reading from it).
-		@uris_to_copy = obtain_uris(read_file($deb_downloader_options{'file'}));		
-	}
+
+	# Obtaining all the needed uris and removing the temporal file.
+	debug_print("Uris --> " . read_file(URI_FILE)  . "\n");
+	@uris_to_copy = obtain_uris(read_file(URI_FILE));
+	unlink URI_FILE;		
 
 	# If there are uris to process.
 	if (scalar(@uris_to_copy) != 0) {
@@ -463,22 +441,6 @@ sub install_packages {
 
 }
 
-#
-# Validations done before dist-upgrade Debian.
-#
-sub validations_dist_upgrade_OK() {
-	
-	if (!common_validations()) {
-		return 0;
-	}
-
-	if (!is_debian_and_is_ready()) {
-		return 0;
-	}
-	
-	return 1;	
-	
-}
 
 #
 # Updating our Debian distro version.
@@ -490,29 +452,26 @@ sub dist_upgrade_distro() {
 	my @uris_to_copy;
 
 
-    # Checking if all information is available.
-    if (!validations_dist_upgrade_OK()) {
+    # Checking available data.
+	if (!common_validations()) {
+		return 0;
+	}
+
+	if (!is_debian_and_is_ready()) {
 		return 0;
 	}
 	
-	# Getting the needed uris ...
-	if (length($deb_downloader_options{'file'}) == 0) { # if file is not provided (using apt-get).
-    	debug_print("Action --> /usr/bin/apt-get dist-upgrade --assume-yes --print-uris \n");
-		# Getting all the needed uris using apt-get dist-upgrade.
-		$RC = system("/usr/bin/apt-get dist-upgrade --assume-yes --print-uris  > " . URI_FILE);
-		if ($RC ne "0") {
-				unlink URI_FILE;
-				print("Error getting packages list. Check it manually.\n");
-				return 0;
-		}
+	# Getting all the needed uris using apt-get dist-upgrade.
+	$RC = system("/usr/bin/apt-get dist-upgrade --assume-yes --print-uris  > " . URI_FILE);
+	if ($RC ne "0") {
+			unlink URI_FILE;
+			print("Error getting packages list. Check it manually.\n");
+			return 0;
+	}
 
-		# Obtaining all the needed uris and removing the uris temporal file.
-		@uris_to_copy = obtain_uris(read_file(URI_FILE));
-		unlink URI_FILE;		
-	}
-	else { # if filename is provided (reading from it).
-		@uris_to_copy = obtain_uris(read_file($deb_downloader_options{'file'}));		
-	}
+	# Obtaining all the needed uris and removing the uris temporal file.
+	@uris_to_copy = obtain_uris(read_file(URI_FILE));
+	unlink URI_FILE;		
 
 	# If there are uris to process.	
 	if (scalar(@uris_to_copy) != 0) {

@@ -6,7 +6,7 @@
 #	Utility for downloading packages in a computer with no Debian 
 #       installed and apt-get then in our favourite flavour of Debian.
 #
-# Copyright (C) 2004 Miquel Oliete <miquel@users.berlios.de>
+# Copyright (C) 2004 Miquel Oliete <debdownloader@gmail.com>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ use File::Copy;
 ###############################################################################
 
 use constant NAME => "deb-downloader-download";
-use constant MAIL => "miquel\@users.berlios.de";
+use constant MAIL => "debdownloader\@gmail.com";
 use constant VERSION => "0.3.1";
 use constant YES => "Y";
 use constant NO => "N";
