@@ -210,7 +210,7 @@ sub are_all_needed_files_downloaded(@) {
 
 	@uris_list = shift;
 	for($i=0;$i<scalar(@uris_list);$i++) {
-		if ($uris_list[$i] =~ /^'(?:http|ftp):\/\/[^\/]*\/([^ ]*\/[^ \/]+.*)' [^ ]* [^ ]* [^ ]*/) {
+		if ($uris_list[$i] =~ /^'(?:http|ftp):\/\/[^\/]*\/([^ ]*\/[^ \/]+.*)' ([^ ]*) [^ ]* [^ ]*/) {
 			debug_print("file---->$root_directory$1.\n");
 			if (! -e "$root_directory$1") {
 			   print("Missing file $1.\n");
@@ -250,7 +250,7 @@ sub copy_files {
 	debug_print("target_directory--->$target_directory\n");
 
 	for($i=0;$i<scalar(@files);$i++) {
-		if ($files[$i] =~ /^\'(?:http|ftp):\/\/[^\/]*\/([^ ]*\/)([^ \/]+.*)' [^ ]* [^ ]* [^ ]*/) {
+		if ($files[$i] =~ /^\'(?:http|ftp):\/\/[^\/]*\/([^ ]*\/)([^ \/]+.*)' ([^ ]*) [^ ]* [^ ]*/) {
 			$pathname = $1;
 			$filename = $2;
 			$control_line = 0;

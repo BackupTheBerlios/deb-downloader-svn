@@ -69,7 +69,6 @@ use constant MAIL => "debdownloader\@gmail.com";
 use constant VERSION => "0.3.1";
 use constant YES => "Y";
 use constant NO => "N";
-use constant UNDEF_VALUE => undef;
 
 my %deb_downloader_options = (	
 				"debugger"=>"N",
@@ -458,7 +457,7 @@ sub http_download(@) {
 			close(DEBFILE);	
 			
 			if ($number_of_bits < 0) {
-		   		print("Error in http data transference with file $3.\n")
+		   		print("Error in http data transference with file $3.\n");
 		   		unlink $3;
 		   		return 0;				
 			}
@@ -478,6 +477,23 @@ sub http_download(@) {
 }
 
 #
+# Printing the ftp error and returns the error code.
+#
+sub ftp_error(@) {
+
+	my $error;	
+	my $message;
+	
+	$message = shift;
+	$error = shift;	
+	
+	print("$message\n");
+
+	return $error;
+		
+}
+
+#
 # Files downloading using ftp protocol and Net::Ftp module. Each execution 
 # of this function uses only one server (list is sorted by server).
 #
@@ -491,7 +507,7 @@ sub ftp_download(@) {
 	my $target_directory;
 	my @files;
 	my $deb_file;
-	my $rc;
+	my $file_transfer_error = 0;
 			
 	$host_name = shift;
 	@lines = @_;	
@@ -503,9 +519,15 @@ sub ftp_download(@) {
 
 	$pwd = getcwd();
 
-	$ftp_connection = Net::FTP->new($host_name, Debug => 0)  || die "Error $host_name ftp_connection\n";
-	$ftp_connection->login("anonymous",'-anonymous@');
-	$ftp_connection->binary();
+	# Openinig the ftp connection with host.
+	$ftp_connection = Net::FTP->new($host_name, Debug => 0) || return ftp_error("Error openning $host_name ftp connection.", 0);
+		
+	# Login as anonymous in the host.
+	$ftp_connection->login("anonymous",'-anonymous@') || return ftp_error("Error logging to $host_name ftp_connection.", 0);
+	
+	# Setting the transmission in binary mode.	
+	$ftp_connection->binary() || return ftp_error("Error setting tranference mode to binary.", 0);
+
 	
 	for($i=0;$i<scalar(@lines);$i++) {
 		debug_print("----->$lines[$i]\n");
@@ -518,20 +540,22 @@ sub ftp_download(@) {
 		
 		# If file exists and skip-downloaded is enabled goes to else option (skip the downloading).
 		if ($deb_downloader_options{'skip-downloaded'} eq NO || !-e $pwd.$2.$3) {
+		
 			$target_directory = substr($2, 1, length($2)-1);
 			if (! -d $pwd.$2) {
 				print("Creating new directory $target_directory...");
 				mkpath($target_directory) or die return 0;
 				print("done\n");
 			}
+			
 			print("Changing to $target_directory directory ...");
 			chdir($target_directory);
 			print("done\n");
 			
 			print("Downloading file $2$3 " . (($deb_file) ? "(" . human_printing($5) . ")" : "") . "...");
 			
-		   	$ftp_connection->cwd($2);
-		   	@files = $ftp_connection->ls($3);
+			# Checking if the file is available in the server.
+		   	@files = $ftp_connection->ls($2.$3) || ftp_error("Error checking if file $3 exists in ftp server.", 0);
 		   	if (scalar(@files) == 0) {
 		   		print("not done\n");
 		   		print("File $3 doesn't exists in ftp server $host_name \n");
@@ -539,11 +563,10 @@ sub ftp_download(@) {
 		   		return 0;
 		   	}
 		   	
-		   	$rc = $ftp_connection->get($3);
-		   	if ($rc == UNDEF_VALUE) {
-		   		print("Error in ftp data transference with file $3.\n")
-		   		unlink $3;
-		   		return 0;
+		   	$ftp_connection->get($2.$3, $4) or $file_transfer_error = 1;
+			if ($file_transfer_error) {
+		   		unlink $3;			
+				return ftp_error("Error in ftp data transference with file $3.", 0);							
 		   	}
 		   	
 			print("done\n"); 
