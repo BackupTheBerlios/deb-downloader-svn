@@ -477,23 +477,6 @@ sub http_download(@) {
 }
 
 #
-# Printing the ftp error and returns the error code.
-#
-sub ftp_error(@) {
-
-	my $error;	
-	my $message;
-	
-	$message = shift;
-	$error = shift;	
-	
-	print("$message\n");
-
-	return $error;
-		
-}
-
-#
 # Files downloading using ftp protocol and Net::Ftp module. Each execution 
 # of this function uses only one server (list is sorted by server).
 #
@@ -507,7 +490,6 @@ sub ftp_download(@) {
 	my $target_directory;
 	my @files;
 	my $deb_file;
-	my $file_transfer_error = 0;
 			
 	$host_name = shift;
 	@lines = @_;	
@@ -520,13 +502,13 @@ sub ftp_download(@) {
 	$pwd = getcwd();
 
 	# Openinig the ftp connection with host.
-	$ftp_connection = Net::FTP->new($host_name, Debug => 0) || return ftp_error("Error openning $host_name ftp connection.", 0);
+	$ftp_connection = Net::FTP->new($host_name, Debug => 0) || print("\nError openning $host_name ftp connection.") && return 0;
 		
 	# Login as anonymous in the host.
-	$ftp_connection->login("anonymous",'-anonymous@') || return ftp_error("Error logging to $host_name ftp_connection.", 0);
+	$ftp_connection->login("anonymous",'-anonymous@') || print("\nError logging to $host_name ftp_connection.") && return 0;
 	
 	# Setting the transmission in binary mode.	
-	$ftp_connection->binary() || return ftp_error("Error setting tranference mode to binary.", 0);
+	$ftp_connection->binary() || print("\nError setting tranference mode to binary.") && return 0;
 
 	
 	for($i=0;$i<scalar(@lines);$i++) {
@@ -555,7 +537,7 @@ sub ftp_download(@) {
 			print("Downloading file $2$3 " . (($deb_file) ? "(" . human_printing($5) . ")" : "") . "...");
 			
 			# Checking if the file is available in the server.
-		   	@files = $ftp_connection->ls($2.$3) || ftp_error("Error checking if file $3 exists in ftp server.", 0);
+		   	@files = $ftp_connection->ls($2.$3) || print("\nError checking if file $3 exists in ftp server.") && return 0;
 		   	if (scalar(@files) == 0) {
 		   		print("not done\n");
 		   		print("File $3 doesn't exists in ftp server $host_name \n");
@@ -563,10 +545,10 @@ sub ftp_download(@) {
 		   		return 0;
 		   	}
 		   	
-		   	$ftp_connection->get($2.$3) or $file_transfer_error = 1;
-			if ($file_transfer_error) {
+			if (!defined $ftp_connection->get($2.$3)) {
 		   		unlink $3;			
-				return ftp_error("Error in ftp data transference with file $3.", 0);							
+				print("\nError in ftp data transference with file $3.");							
+				return 0;
 		   	}
 		   	
 			print("done\n"); 
