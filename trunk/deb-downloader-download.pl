@@ -75,6 +75,8 @@ my %deb_downloader_options = (
 				"debugger"=>"N",
 				"skip-downloaded"=>"N",				
 				"file"=>"", 
+				"ftp-proxy"=>"", 
+				"http-proxy"=>"", 
 				"dd-root"=>"./dd-root/",
 				"help"=>"N",
 				"version"=>"N");
@@ -196,13 +198,13 @@ sub read_file($) {
 }
 
 #
-# Validating necessary information needed for right script execution.
+# Validating necessary and additional information needed for right script execution.
 #
 sub validationsOK() {
 
 	# Checking if sources filenames are provided.
-    if (length($deb_downloader_options{'file'}) == 0) {
-    	print("sources file has not been provided.\n");
+    	if (length($deb_downloader_options{'file'}) == 0) {
+    		print("sources file has not been provided.\n");
 		return 0;
 	}
 
@@ -211,7 +213,23 @@ sub validationsOK() {
 		print("root directory has not been filled.\n");
 		return 0;
 	}
-					 
+	
+	# Checking if http_proxy environment variable has value.
+	if (length($deb_downloader_options{'http-proxy'}) == 0) {
+		if (length($ENV{'http_proxy'}) != 0) {
+			print("Founded http_proxy variable with value " . $ENV{'http_proxy'} . "\n");
+			$deb_downloader_options{'http-proxy'} = $ENV{'http_proxy'};
+		}
+	}
+	
+	# Checking if ftp_proxy environment variable has value.
+	if (length($deb_downloader_options{'ftp-proxy'}) == 0) {
+		if (length($ENV{'ftp_proxy'}) != 0) {
+			print("Founded ftp_proxy variable with value " . $ENV{'ftp_proxy'} . "\n");
+			$deb_downloader_options{'ftp-proxy'} = $ENV{'ftp_proxy'};
+		}
+	}
+						 
 	return 1;
 
 }
@@ -420,8 +438,15 @@ sub http_download(@) {
 	
 	for($i=0;$i<scalar(@lines);$i++) {
 	
-		$http_connection = Net::HTTP->new(Host => $host_name) || print("Error openning $host_name http_connection\n") && return 0;
+		if (length($deb_downloader_options{'http-proxy'}) == 0) {
+			$http_connection = Net::HTTP->new(Host => $host_name) || print("Error openning $host_name http_connection\n") && return 0;
+		}
+		else {
+			$http_connection = Net::HTTP->new(Host => $host_name, Firewall => $deb_downloader_options{'http-proxy'}) || print("Error openning $host_name http_connection\n") && return 0;
+		}
+		
 		debug_print("----->$lines[$i]\n");
+		
 		if ($lines[$i] =~ /([^\/]*)(\/[^ ]*\/)([^ \/]+\.deb)\' ([^ ]*) ([^ ]*) ([^ ]*)/) {
 			$deb_file = 1;
 		}
@@ -513,8 +538,13 @@ sub ftp_download(@) {
 
 	$pwd = getcwd();
 
-	# Openinig the ftp connection with host.
-	$ftp_connection = Net::FTP->new($host_name, Debug => 0) || print("\nError openning $host_name ftp connection.") && return 0;
+	# Openning the ftp connection with host.
+	if (length($deb_downloader_options{'ftp-proxy'}) == 0) {
+		$ftp_connection = Net::FTP->new($host_name, Debug => 0) || print("\nError openning $host_name ftp connection.") && return 0;
+	}
+	else {
+		$ftp_connection = Net::FTP->new($host_name, Debug => 0, Firewall => $deb_downloader_options{'ftp-proxy'}) || print("\nError openning $host_name ftp connection.") && return 0;
+	}
 		
 	# Login as anonymous in the host.
 	$ftp_connection->login("anonymous",'-anonymous@') || print("\nError logging to $host_name ftp_connection.") && return 0;
@@ -602,7 +632,7 @@ sub validate_and_get_parameters(@) {
 			if (length($1) != 0) {
 				$files_with_uris .= " " . $1;
 			}
-			while ($i+1<scalar(@ARGV) && !($ARGV[$i+1] =~ /^(-d|--debug|--dd-root=.*|--skip-downloaded|--help|--version)$/)) {
+			while ($i+1<scalar(@ARGV) && !($ARGV[$i+1] =~ /^(-d|--debug|--http-proxy=.*|--ftp-proxy=.*|--dd-root=.*|--skip-downloaded|--help|--version)$/)) {
 				$i++;
 				$files_with_uris .= " " . $ARGV[$i];
 			}
@@ -623,6 +653,12 @@ sub validate_and_get_parameters(@) {
 				$deb_downloader_options{'dd-root'} .= '/';
 			}
 							
+		}
+		elsif ($_[$i] eq "--ftp-proxy=(.*)") {
+			$deb_downloader_options{'ftp-proxy'} = $1;
+		}
+		elsif ($_[$i] eq "--http-proxy=(.*)") {
+			$deb_downloader_options{'http-proxy'} = $1;
 		}
 		elsif ($_[$i] eq "--skip-downloaded") {
 			$deb_downloader_options{'skip-downloaded'} = YES;
