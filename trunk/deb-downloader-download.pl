@@ -198,11 +198,13 @@ sub read_file($) {
 #
 sub validationsOK() {
 
+	# Checking if sources filenames are provided.
     if (length($deb_downloader_options{'file'}) == 0) {
     	print("sources file has not been provided.\n");
 		return 0;
 	}
 
+	# Checking if download directory is provided.
 	if (length($deb_downloader_options{'dd-root'}) == 0) {
 		print("root directory has not been filled.\n");
 		return 0;
@@ -255,6 +257,7 @@ sub get_uris_to_download($) {
 	my $i;
 
 	@sources = split(" ", shift);
+	
 	if ($deb_downloader_options{'debugger'} eq YES) {
 		for($i=0;$i<scalar(@sources);$i++) {
 			debug_print("Source $i --> $sources[$i]\n");
@@ -262,12 +265,12 @@ sub get_uris_to_download($) {
 	}
 
 	for($i=0;$i<scalar(@sources);$i++) {
-
 		if (! -e $sources[$i]) {
 			print("File $sources[$i] not found.\n");
 			return 0;
 		}
 	
+		# Joining all read uris for removing duplicates a sorting.
 		$work = read_file($sources[$i]);
 		$contents .= $work;
 	}
@@ -297,17 +300,16 @@ sub remove_duplicates_and_sort(@) {
 	# Sorting uris.
     @uris_to_process = sort keys(%uris);
 
-	print("Number of uris to process-->".scalar(@uris_to_process)."\n");
-	
-	debug_print("\n");
-	debug_print("Files without duplicates.\n");
-	debug_print("Init of files without duplicates ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
-	
-	for($i=0;$i<scalar(@uris_to_process);$i++) {
-		debug_print("File --->$uris_to_process[$i]\n");
+	if ($deb_downloader_options{'debugger'} eq YES) {
+		debug_print("Number of uris to process-->".scalar(@uris_to_process)."\n");
+		debug_print("\n");
+		debug_print("Files without duplicates.\n");
+		debug_print("Init of files without duplicates ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+		for($i=0;$i<scalar(@uris_to_process);$i++) {
+			debug_print("File --->$uris_to_process[$i]\n");
+		}
+		debug_print("End of files without duplicates ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	}
-	
-	debug_print("End of files without duplicates ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	
 	return @uris_to_process;
 
@@ -351,11 +353,6 @@ sub download_packages() {
 	my @file_lines;
 
 	$|=1;
-
-	# Validating the entered data.
-    if (!validationsOK()) {
-		return 0;
-	}
 
 	# Creating the download directory if it doesn't exist.
 	if (! -e $deb_downloader_options{'dd-root'}) {
@@ -449,6 +446,7 @@ sub http_download(@) {
 		
 		$target_directory = substr($2, 1, length($2)-1);
 		
+		# If file exists and skip-downloaded is enabled goes to else option (skip the downloading).
 		if ($deb_downloader_options{'skip-downloaded'} eq NO || !-e $pwd.$2.$3) {
 			if (! -d $pwd.$2) {
 				print("Creating new directory $target_directory...");
@@ -524,6 +522,7 @@ sub ftp_download(@) {
 			$deb_file = 0;
 		}
 		
+		# If file exists and skip-downloaded is enabled goes to else option (skip the downloading).
 		if ($deb_downloader_options{'skip-downloaded'} eq NO || !-e $pwd.$2.$3) {
 			$target_directory = substr($2, 1, length($2)-1);
 			if (! -d $pwd.$2) {
@@ -646,12 +645,10 @@ elsif ($deb_downloader_options{'version'} eq YES) {
 	print_version();
 }
 else {
-	# Getting source files content.
-	#$sources_list_content = read_source_files($deb_downloader_options{'file'});
-	#if (length($sources_list_content) == 0) {
-	#	print("Empty source files.\n");
-	#	deb_downloader_exit(0);		
-	#}
+	# Validating if the entered parameters are OK and enough.
+    if (!validationsOK()) {
+		deb_downloader_exit(1);		
+	}	
 	
 	# Getting source files contents, parsing sources.list getting only the ftp 
 	# and http uris for downloading, sorted and duplicates removed.
