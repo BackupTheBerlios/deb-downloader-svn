@@ -1,0 +1,107 @@
+~~~~~~~~~~~~~~~~~~
+~ deb-downloader ~
+~~~~~~~~~~~~~~~~~~
+
+
+ INTRODUCCIÓN
+~~~~~~~~~~~~~~
+
+	Esta es una utilidad escrita por mi llamada deb-downloader, una herramienta implementada para una distribución
+de GNU/Linux específica llamada Debian (o distribuciones basadas en ella). deb-downloader fue escrita hace dos meses cuando
+mi conexión de "alta velocidad" fué cortada por un cambio de domicilio. Este hecho hizo plantearme cuál seria la mejor manera
+para actualizar mi Sid (DEbian tinee tres versiones (estable, testeo e inestable, tambien llamada Sid. Una leyenda urbana 
+cuenta que proviene de "System In Development")).
+
+	Habia oído hablar de una herramienta llamada apt-zip, pero no dispongo de una distribución GNU/Linux en el trabajo,
+por tanto decidí escribir esta herramienta. deb-downloader está escrito en Perl, por tanto, el único requerimiento para usarlo
+es disponer de un sistema operativo con un interprete de perl como pueden ser sistemas *nix, Macintosh (OS 7-9 i X), VMS, 
+Windows, etc. (mira http://www.cpan.org/ports/index.html para más información).
+
+	Espero que sea tan útil para todo aquel que la use.
+
+
+ REQUERIMIENTOS
+~~~~~~~~~~~~~~~~
+
+	Sólo hay dos requerimientos para usar deb-downloader.
+	
+		- Debian GNU/Linux (o basada en Debian) con interprete de perl para deb-downloader-build y deb-downloader-install.
+		- Interprete de perl con los módulos Net::FTP y Net::HTTP para deb-downloader-download.
+
+
+ INSTALACIÓN
+~~~~~~~~~~~~~
+
+	- tar xvfz deb-downloader-nn.nn.nn.tar.gz target_dir.
+	- tar xvfj deb-downloader-nn.nn.nn.tar.bz target_dir.
+	.
+	.
+	.
+
+	
+ USO
+~~~~~
+
+	Este script está dividido físicamente en tres partes. La primera y la tercera se ejecutan en una distribución Debian y
+la segunda en una máquina con cualquier sistema operativo que tenga disponible un interprete de perl.
+
+	Estos son los tres scripts :
+
+	- deb-downloader-build : Esta opción se usa para recolectar las uris de todo los paquetes .deb que posteriormente
+	  seran descarrgados. Esta opción se ejecuta en una distribución Debian.
+
+		deb-downloader-build --file=filename install package1...packagen|dist-upgrade [-d|--debug] [--skip-update]
+		
+			-d|--debug : Sirve para ver mensajes extra de la ejecución. Importante para reportar bugs.
+			--file : Nombre del fichero donde gravaremos las uris de los .deb.
+			--skip-update : No ejecutar apt-get update (con esta opción activada, no es necessario ejecutar
+			  el script como usuario root.
+			install paquete1...paqueten : Seleccionar los paquetes a descargar (apt-get install loquesea).
+			dist-upgrade : Actualiza la distro (apt-get dist-upgrade).			  
+		
+
+	- deb-downloader-download : Esta opción se usa para descargar los paquetes .deb necessarios. Puede ser ejecutada en cualquier
+	    		ordenador con qualsevol sistema operatiu con un interprete de perl.
+				 
+		deb-downloader-download --file=filename1...filenamen [-d|--debug] [--dd-root=directory] [--skip-downloaded]
+		
+			-d|--debug : Sirve para ver mensajes extra de la ejecución. Importante para reportar bugs.
+			--file : Nombres de los ficheros de donde leeremos las uris.		
+			--dd-root : Especifica el directorio de destino para descargar los paquetes .deb (directorio dd-root por
+			  defecto).
+			--skip-downloaded : Si esta opción está activada, los paquetes ya descargados no se descargaran otra vez
+			  (si has parado la ejecución antes de finalizar).
+				 
+	- deb-downloader-install : Esta opció se usa para instalar los paquetes en /var/cache/apt/archives y, si se quiere, 
+		    	ejecutar apt-get dist-upgrade, apt-get install lo que sea o nada, como se quiera.
+		
+		deb-downloader-install --file=filename [-d|--debug] [install package1...packagen|dist-upgrade][--mirror-format] [--dd-root=directory]
+		
+			-d|--debug : Sirve para ver mensajes extra de la ejecución. Importante para reportar bugs.
+			--file : Nombre del fichero de donde leeremos las uris.		
+			--dd-root : Especifica el directorio de donde recogeremos los paquets .deb (directorio dd-root por defecto).
+			--mirror-format : Esta opción nos gravará los paquetes con el formato de directorios que tiene el servidor 
+			  (incompatible con la funcio dd-root no informada).		
+			install paquete1...paqueten : Seleccionar los paquetes a descargar (apt-get install loquesea).
+			dist-upgrade : Actualiza la distro (apt-get dist-upgrade).			  
+			copy-files : Sólo copia los archivos en el directorio especificado.
+
+		
+ ERRORES, PARCHES, REQUERIMENTOS & SUGERENCIAS
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+	Por favor, reportad todos los errores, parches, requerimientos y sugerencias a mi (ktalanet@yahoo.es), será todo
+bienvenido (si es muy interesante intentaré incluirlo en la siguiente "release".
+	Si quereis comentar algún tema adicional también podeis apuntaros a las listas de correo que encontrareis en la siguiente
+página web  --> http://deb-downloader.berlios.de/lists.php?lang=es .
+
+
+ LICENCIA
+~~~~~~~~~~
+
+	Este programa es software libre; puedes redistribuirlo y/o modificarlo segun las condiciones de la licencia pública 
+general GNU (GPL) tal y como está publicado por la Free Software Foundation; tanto para la versión 2 o (segun tu opción) cualquier
+versión posterior.
+
+	Este software es distribuido esperando ser útil, pero SIN NINGUNA GARANTIA; sin la garantia implícita de MERCANTIBILIDAD 
+o CAPACIDAD PARA UN PROPOSITO PARTICULAR. Lee la licencia pública general GNU (GPL) para más información.
