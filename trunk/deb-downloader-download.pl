@@ -69,6 +69,7 @@ use constant MAIL => "debdownloader\@gmail.com";
 use constant VERSION => "0.3.1";
 use constant YES => "Y";
 use constant NO => "N";
+use constant UNDEF_VALUE => undef;
 
 my %deb_downloader_options = (	
 				"debugger"=>"N",
@@ -405,6 +406,7 @@ sub http_download(@) {
 	my $target_directory;
 	my $internal_buffer;
 	my $deb_file;
+	my $number_of_bits;
 	
 	$host_name = shift;
 	@lines = @_;	
@@ -446,13 +448,21 @@ sub http_download(@) {
 			$http_connection->write_request(GET => $2.$3, 'User-Agent' => "Mozilla/5.0");
 			($code, $mess, %h) = $http_connection->read_response_headers;
 			
-			open(DEBFILE,">$3") or die "Error opening output file $2.\n";
+			open(DEBFILE,">$3") or die "Error opening output file $3.\n";
 			binmode(DEBFILE);
 			
-			while ($http_connection->read_entity_body($internal_buffer, 1024) > 0) {
+			while (($number_of_bits = $http_connection->read_entity_body($internal_buffer, 1024)) > 0) {
 				print DEBFILE $internal_buffer;
 			}
+
 			close(DEBFILE);	
+			
+			if ($number_of_bits < 0) {
+		   		print("Error in http data transference with file $3.\n")
+		   		unlink $3;
+		   		return 0;				
+			}
+			
 			print("done\n");
 	
 			chdir($pwd);
@@ -481,6 +491,7 @@ sub ftp_download(@) {
 	my $target_directory;
 	my @files;
 	my $deb_file;
+	my $rc;
 			
 	$host_name = shift;
 	@lines = @_;	
@@ -527,7 +538,14 @@ sub ftp_download(@) {
 		   		print("Execute this script with build option again in your Debian.\n");
 		   		return 0;
 		   	}
-		   	$ftp_connection->get($3);
+		   	
+		   	$rc = $ftp_connection->get($3);
+		   	if ($rc == UNDEF_VALUE) {
+		   		print("Error in ftp data transference with file $3.\n")
+		   		unlink $3;
+		   		return 0;
+		   	}
+		   	
 			print("done\n"); 
 			
 			chdir($pwd);					
