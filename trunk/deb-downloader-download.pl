@@ -413,7 +413,7 @@ sub http_download(@) {
 	debug_print("http\$host_name-->$host_name\n");	
 	debug_print("http\$host_file-->".join("\n", @lines)."\n");	
 	
-	print("Protocol used with server $host_name : http.\n\n");
+	print("\nProtocol used with server $host_name : http.\n\n");
 	
 	$pwd = getcwd();
 	
@@ -515,7 +515,7 @@ sub ftp_download(@) {
 	debug_print("ftp\$host_name-->$host_name\n");	
 	debug_print("ftp\$host_file-->".join("\n", @lines)."\n");	
 
-	print("Protocol used with server $host_name : ftp.\n\n");
+	print("\nProtocol used with server $host_name : ftp.\n\n");
 
 	$pwd = getcwd();
 
@@ -563,7 +563,7 @@ sub ftp_download(@) {
 		   		return 0;
 		   	}
 		   	
-		   	$ftp_connection->get($2.$3, $4) or $file_transfer_error = 1;
+		   	$ftp_connection->get($2.$3) or $file_transfer_error = 1;
 			if ($file_transfer_error) {
 		   		unlink $3;			
 				return ftp_error("Error in ftp data transference with file $3.", 0);							
@@ -582,7 +582,7 @@ sub ftp_download(@) {
 	
 	$ftp_connection->quit;
     	
-    	return 1;
+    return 1;
     
 }
 
