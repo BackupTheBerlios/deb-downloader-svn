@@ -6,7 +6,7 @@
 #	Utility for downloading packages in a computer with no Debian 
 #       installed and apt-get then in our favourite flavour of Debian.
 #
-# Copyright (C) 2004 Miquel Oliete <ktalanet@yahoo.es>
+# Copyright (C) 2004 Miquel Oliete <miquel@users.berlios.de>
 #
 # This program is free software; you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -65,7 +65,7 @@ use File::Copy;
 ###############################################################################
 
 use constant NAME => "deb-downloader-download";
-use constant MAIL => "ktalanet\@yahoo.es";
+use constant MAIL => "miquel\@users.berlios.de";
 use constant VERSION => "0.3.1";
 use constant YES => "Y";
 use constant NO => "N";
@@ -151,6 +151,7 @@ sub human_printing($) {
 	my $counter;
 
 	$bytes = shift;
+	
 	if (length($bytes) == 0) {
 		return 0;
 	}
@@ -160,7 +161,7 @@ sub human_printing($) {
 		$counter++;
 	}
 
-	# return $bytes / (1024 ** ($counter)) . " " . $unit[$counter];
+	# Formatting the output with precision two.
 	return sprintf("%.2f", $bytes / (1024 ** ($counter))) . " " . $unit[$counter];
 
 }
@@ -215,38 +216,6 @@ sub validationsOK() {
 }
 
 #
-# Parsing sources list lines getting only the uri lines (using regular expressions).
-#
-sub parse_sources_list() {
-	
-	my @lines;
-	my $i;
-	my $line_index;
-	
-	@lines = split(/\n+/, $sources_list_content);
-	$line_index = 0;
-	for($i=0;$i<scalar(@lines);$i++) {
-		if ($lines[$i] =~ /((?:ftp|http):\/\/.*)/) {
-			$sources_list_lines[$line_index] = $lines[$i];
-			$line_index++;			
-			
-		}
-		else {
-			debug_print("Error in line--->$lines[$i]\n");
-			return 0;
-		}
-	}
-	
-	if ($line_index == 0) {
-		print("No valid sentence in sources.list file.\n");
-		return 0;
-	}
-	
-	return 1;
-	
-}
-
-#
 # Getting the uris to download reading the sources files.
 #
 sub get_uris_to_download($) {
@@ -256,8 +225,10 @@ sub get_uris_to_download($) {
 	my $contents = "";
 	my $i;
 
+	# Splitting the names (format name1 name2 name 3 and so on) in an array.
 	@sources = split(" ", shift);
 	
+	# Debugger code (just printing the filenames).
 	if ($deb_downloader_options{'debugger'} eq YES) {
 		for($i=0;$i<scalar(@sources);$i++) {
 			debug_print("Source $i --> $sources[$i]\n");
@@ -265,6 +236,8 @@ sub get_uris_to_download($) {
 	}
 
 	for($i=0;$i<scalar(@sources);$i++) {
+	
+		# Checking if the sources file provided exists.
 		if (! -e $sources[$i]) {
 			print("File $sources[$i] not found.\n");
 			return 0;
@@ -273,6 +246,7 @@ sub get_uris_to_download($) {
 		# Joining all read uris for removing duplicates a sorting.
 		$work = read_file($sources[$i]);
 		$contents .= $work;
+		
 	}
 	
 	
@@ -294,7 +268,15 @@ sub remove_duplicates_and_sort(@) {
 	
 	# Removing duplicated values.
 	for($i=0;$i<scalar(@uris_to_process);$i++) {
-		$uris{$uris_to_process[$i]} = "";
+		# Checking if it's a valid uri using regular expressions.	
+		if ($uris_to_process[$i] =~ /((?:ftp|http):\/\/.*)/) {
+			$uris{$uris_to_process[$i]} = "";
+		}
+		else {
+			print("Error processing line--->$uris_to_process[$i]\n");
+			return 0;
+		}	
+		
 	}
 
 	# Sorting uris.
@@ -316,7 +298,7 @@ sub remove_duplicates_and_sort(@) {
 }
 
 #
-# Splits and return server part from an uri entered by param.
+# Splits and return server part from an uri entered by parameter.
 #
 sub get_server_protocol($) {
 
@@ -435,6 +417,7 @@ sub http_download(@) {
 	$pwd = getcwd();
 	
 	for($i=0;$i<scalar(@lines);$i++) {
+	
 		$http_connection = Net::HTTP->new(Host => $host_name) || die "Error openning $host_name http_connection\n";
 		debug_print("----->$lines[$i]\n");
 		if ($lines[$i] =~ /([^\/]*)(\/[^ ]*\/)([^ \/]+\.deb)\' ([^ ]*) ([^ ]*) ([^ ]*)/) {
@@ -645,7 +628,7 @@ elsif ($deb_downloader_options{'version'} eq YES) {
 	print_version();
 }
 else {
-	# Validating if the entered parameters are OK and enough.
+	# Validating if the entered parameters are enough and are OK.
     if (!validationsOK()) {
 		deb_downloader_exit(1);		
 	}	
