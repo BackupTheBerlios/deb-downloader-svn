@@ -266,7 +266,7 @@ sub remove_duplicates_and_sort(@) {
 
 	@uris_to_process = @_;
 	
-	# Removing duplicated values.
+	# Removing duplicated values using a hash table (maybe it could be better, but it works Ok).
 	for($i=0;$i<scalar(@uris_to_process);$i++) {
 		# Checking if it's a valid uri using regular expressions.	
 		if ($uris_to_process[$i] =~ /((?:ftp|http):\/\/.*)/) {
@@ -412,7 +412,7 @@ sub http_download(@) {
 	debug_print("http\$host_name-->$host_name\n");	
 	debug_print("http\$host_file-->".join("\n", @lines)."\n");	
 	
-	print("Protocol------->http.\n");
+	print("Protocol used with server $host_name : http.\n\n");
 	
 	$pwd = getcwd();
 	
@@ -488,7 +488,7 @@ sub ftp_download(@) {
 	debug_print("ftp\$host_name-->$host_name\n");	
 	debug_print("ftp\$host_file-->".join("\n", @lines)."\n");	
 
-	print("Protocol------->ftp.\n");
+	print("Protocol used with server $host_name : ftp.\n\n");
 
 	$pwd = getcwd();
 
@@ -567,7 +567,7 @@ sub validate_and_get_parameters(@) {
 			if (length($1) != 0) {
 				$files_with_uris .= " " . $1;
 			}
-			while ($i+1<scalar(@ARGV) && !($ARGV[$i+1] =~ /^(-d|--debug|--dd-root|--skip-downloaded|--help|--version)$/)) {
+			while ($i+1<scalar(@ARGV) && !($ARGV[$i+1] =~ /^(-d|--debug|--dd-root=.*|--skip-downloaded|--help|--version)$/)) {
 				$i++;
 				$files_with_uris .= " " . $ARGV[$i];
 			}

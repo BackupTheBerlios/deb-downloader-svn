@@ -414,7 +414,7 @@ sub validate_and_get_parameters(@) {
 			$deb_downloader_options{'dist-upgrade'} = YES;
 		}
 		elsif ($_[$i] eq "install") {
-			while ($i+1<scalar(@ARGV) && !($ARGV[$i+1] =~ /^(-d|--debug|--file|--skip-update|--help|dist-upgrade|--version)$/)) {
+			while ($i+1<scalar(@ARGV) && !($ARGV[$i+1] =~ /^(-d|--debug|--file=.*|--skip-update|--help|dist-upgrade|--version)$/)) {
 				$i++;
 				$packages_to_install .= " " . $ARGV[$i];
 			}

@@ -186,7 +186,7 @@ sub obtain_uris($) {
 		debug_print("+----------> $uris_list[$i]\n");
 		if ($uris_list[$i] =~ /^'(?:http|ftp):\/\/[^\/]*\/[^ ]*\/[^ \/]+\.deb' [^ ]* [^ ]* [^ ]*/) {
 	    	debug_print("choosen uri ----------> $uris_list[$i]\n");
-			$needed_uris[scalar(@needed_uris)] .= $uris_list[$i] . "\n";
+			$needed_uris[scalar(@needed_uris)] = $uris_list[$i];
 		}
 	}	
 
@@ -213,12 +213,14 @@ sub are_all_needed_files_downloaded(@) {
 		if ($uris_list[$i] =~ /^'(?:http|ftp):\/\/[^\/]*\/([^ ]*\/[^ \/]+.*)' [^ ]* [^ ]* [^ ]*/) {
 			debug_print("file---->$root_directory$1.\n");
 			if (! -e "$root_directory$1") {
+			   print("Missing file $1.\n");
 				return 0;
 			}
 		}
 		elsif ($uris_list[$i] =~ /^'(?:http|ftp):\/\/[^\/]*\/([^ ]*\/[^ \/]+.*)'/) {
 			debug_print("file---->$root_directory$1.\n");
 			if (! -e "$root_directory$1") {
+				print("Missing file $1.\n");
 				return 0;
 			}
 		}
@@ -243,7 +245,7 @@ sub copy_files {
 
 	$source_directory = shift;
 	$target_directory = shift;
-	@files = shift;
+	@files = @_;
 	debug_print("source_directory--->$source_directory\n");
 	debug_print("target_directory--->$target_directory\n");
 
@@ -610,7 +612,7 @@ sub validate_and_get_parameters(@) {
 			if ($deb_downloader_options{'dd-root'} =~ /.*[^\/]/) {
 				$deb_downloader_options{'dd-root'} .= '/';
 			}
-f		}
+		}
 		elsif ($_[$i] =~ /--output-directory=((?:[^ ]*\+?)+)/) {
 			$deb_downloader_options{'output-directory'} = $1;	
 		}
@@ -630,7 +632,7 @@ f		}
 			$deb_downloader_options{'dist-upgrade'} = YES;
 		}
 		elsif ($_[$i] eq "install") {
-			while ($i+1<scalar(@ARGV) && !($ARGV[$i+1] =~ /^(-d|--debug|--file|--dd-root|--output-directory|--mirror-format|--skip-action|--help|--version|dist-upgrade|copy-files)$/)) {
+			while ($i+1<scalar(@ARGV) && !($ARGV[$i+1] =~ /^(-d|--debug|--file=.*|--dd-root=.*|--output-directory=.*|--mirror-format|--skip-action|--help|--version|dist-upgrade|copy-files)$/)) {
 				$i++;
 				$packages_to_install .= " " . $ARGV[$i];
 			}
