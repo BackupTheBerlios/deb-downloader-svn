@@ -53,6 +53,8 @@ la segona en una màquina amb qualsevol sistema operatiu que tingui disponible un
 		deb-downloader-build --file=filename install package1...packagen|dist-upgrade [-d|--debug] [--skip-update]
 		
 			-d|--debug : Serveix per veure missatges extra de l'execució. Important per reportar bugs.
+			--help : Mostra l'ajuda del deb-downloader.
+			--version : Mostra la versió del deb-downloader.						
 			--file : Nom de l'arxiu on gravarem les uris dels .deb.
 			--skip-update : No executar apt-get update (amb aquesta opció activada, no és necessari executar
 			  el script com a usuari root.
@@ -66,6 +68,8 @@ la segona en una màquina amb qualsevol sistema operatiu que tingui disponible un
 		deb-downloader-download --file=filename1...filenamen [-d|--debug] [--dd-root=directory] [--skip-downloaded]
 		
 			-d|--debug : Serveix per veure missatges extra de l'execució. Important per reportar bugs.
+			--help : Mostra l'ajuda del deb-downloader.
+			--version : Mostra la versió del deb-downloader.			
 			--file : Noms dels arxius d'on llegirem les uris.		
 			--dd-root : Especifica el directori de destí per descarregar els paquets .deb (directori dd-root per defecte).
 			--skip-downloaded : Si aquesta opció està activada, els paquets ja descarregats no es descarregaran una
@@ -74,13 +78,18 @@ la segona en una màquina amb qualsevol sistema operatiu que tingui disponible un
 	- deb-downloader-install : Aquesta opció és usada per instal·lar els paquets dins de /var/cache/apt/archives i, si es vol, 
 		    	executar apt-get dist-upgrade, apt-get install el que sigui o res, com vulguis.
 		
-		deb-downloader-install --file=filename [-d|--debug] [install package1...packagen|dist-upgrade][--mirror-format] [--dd-root=directory]
+		deb-downloader-install --file=filename [-d|--debug] [install
+		package1...packagen|dist-upgrade][--mirror-format] [--dd-root=directori] [--output-directory=directori]
 		
 			-d|--debug : Serveix per veure missatges extra de l'execució. Important per reportar bugs.
+			--help : Mostra l'ajuda del deb-downloader.
+			--version : Mostra la versió del deb-downloader.						
 			--file : Nom dels arxius d'on llegirem les uris.		
 			--dd-root : Especifica el directori d'on agafarem els paquets .deb (directori dd-root per defecte).
+			--output-directory : Especifica el directori on es copiaran els paquets .deb packages (directori /var/cache/apt/archives per defecte).						
 			--mirror-format : Aquesta opció ens gravarà els paquets amb el format de directoris que té el servidor 
 			  (incompatible amb la funcio dd-root no informada).		
+			--skip-action : Aquesta opció salta la acció (dist-upgrade o install elquesigui).						  
 			install paquet1...paquetn : Seleccionar els paquets a descarregar (apt-get install elquesigui).
 			dist-upgrade : Actualitza la distro (apt-get dist-upgrade).			  
 			copy-files : Només copia els arxius al directori especificat.
@@ -89,7 +98,7 @@ la segona en una màquina amb qualsevol sistema operatiu que tingui disponible un
  ERRORS, PEGATS, REQUERIMENTS & SUGERENCIES
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	Si us plau, reporteu tots els errors, pegats, requeriments i sugerencies a mi (ktalanet@yahoo.es), serà tot benvingut
+	Si us plau, reporteu tots els errors, pegats, requeriments i sugerencies a debdownloader@gmail.com, serà tot benvingut
 (si es molt interessant intentaré incloure-ho a la següent "release". Si voleu comentar algun tema també podeu apuntar-vos a les llistes de correu que trobareu a la següent pàgina web --> http://deb-downloader.berlios.de/lists.php?lang=ca .
 
 

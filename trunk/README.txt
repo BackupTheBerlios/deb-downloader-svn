@@ -47,12 +47,14 @@ second one in a machine with any operating system containing a perl interpreter.
 
 	This are the three scripts :
 
-	- deb-downloader-build : This option is used for recollect all the .deb uris needed for downloading the packages. 
-			This option is executed in a Debian distro.
+	- deb-downloader-build : This option is used for recollecting all the .deb uris needed for downloading the packages. 
+							 This option is executed in a Debian distro.
 
 		deb-downloader-build --help| --version | ([-d|--debug] --file=filename install package1...packagen|dist-upgrade [--skip-update])
 		
 			-d|--debug : View execution extra messages. Important for reporting a bug.
+			--help : Prints deb-downloader help.
+			--version : Prints deb-downloader version.
 			--file : Filename where uris will be saved.
 			--skip-update : Skip apt-get update execution (with this option activated, it doesn't have to 
 			  be executed as root user.
@@ -66,6 +68,8 @@ second one in a machine with any operating system containing a perl interpreter.
 		deb-downloader-download --file=filename1...filenamen [-d|--debug] [--dd-root=directory] [--skip-downloaded]
 		
 			-d|--debug : View execution extra messages. Important for reporting a bug.
+			--help : Prints deb-downloader help.
+			--version : Prints deb-downloader version.			
 			--file : Filename(s) where uris are read from.		
 			--dd-root : Specify target destination for downloaded .deb packages (dd-root folder by default).
 			--skip-downloaded : If this option is activated, packages already downloader will not be downloaded
@@ -74,12 +78,17 @@ second one in a machine with any operating system containing a perl interpreter.
 	- deb-downloader-install : This option is used for install the packages into the /var/cache/apt/archives and, if you want, 
 		    	execute apt-get dist-upgrade, apt-get install whatever or nothing, as you like.
 		
-		deb-downloader-install --file=filename [-d|--debug] [install package1...packagen|dist-upgrade][--mirror-format] [--dd-root=directory]
+		deb-downloader-install --file=filename [-d|--debug] [install
+		package1...packagen|dist-upgrade][--mirror-format] [--dd-root=directory] [--output-directory=directory]
 		
 			-d|--debug : View execution extra messages. Important for reporting a bug.
+			--help : Prints deb-downloader help.
+			--version : Prints deb-downloader version.			
 			--file : Filename where uris are read from.		
-			--dd-root : Specify target destination for downloaded .deb packages (dd-root folder by default).
+			--dd-root : Specify source for downloaded .deb packages (dd-root folder by default).
+			--output-directory : Specify target for downloaded .deb packages (/var/cache/apt/archives folder by default).			
 			--mirror-format : With this option activated, packages are written with mirror structure.		
+			--skip-action : This option skips the action (dist-upgrade or install whatever).
 			install package1...packagen : Select the packages to download (apt-get install whatever).
 			dist-upgrade : Upgrade the distro (apt-get dist-upgrade).
 			copy-files : Just copy the files into the specified directory.
@@ -88,7 +97,7 @@ second one in a machine with any operating system containing a perl interpreter.
  BUGS, PATCHES, REQUIREMENT & SUGGESTIONS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	Please report all bugs, patches, requirements and suggestions to me (ktalanet@yahoo.es), everything will be welcomed 
+	Please report all bugs, patches, requirements and suggestions to debdownloader@gmail.com, everything will be welcomed 
 (if there's some interesting one, I will try to include it in the next release).
 
 	If you want to comment something, you can also post it to the deb-downloader  mailing lists, which can be found in the 

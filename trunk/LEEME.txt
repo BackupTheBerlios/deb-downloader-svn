@@ -53,6 +53,8 @@ la segunda en una máquina con cualquier sistema operativo que tenga disponible u
 		deb-downloader-build --file=filename install package1...packagen|dist-upgrade [-d|--debug] [--skip-update]
 		
 			-d|--debug : Sirve para ver mensajes extra de la ejecución. Importante para reportar bugs.
+			--help : Muestra la ayuda del deb-downloader.
+			--version : Muestra la versión del deb-downloader.						
 			--file : Nombre del fichero donde gravaremos las uris de los .deb.
 			--skip-update : No ejecutar apt-get update (con esta opción activada, no es necessario ejecutar
 			  el script como usuario root.
@@ -61,11 +63,13 @@ la segunda en una máquina con cualquier sistema operativo que tenga disponible u
 		
 
 	- deb-downloader-download : Esta opción se usa para descargar los paquetes .deb necessarios. Puede ser ejecutada en cualquier
-	    		ordenador con qualsevol sistema operatiu con un interprete de perl.
+	    		ordenador con qualsevol sistema operativo con un interprete de perl.
 				 
 		deb-downloader-download --file=filename1...filenamen [-d|--debug] [--dd-root=directory] [--skip-downloaded]
 		
 			-d|--debug : Sirve para ver mensajes extra de la ejecución. Importante para reportar bugs.
+			--help : Muestra la ayuda del deb-downloader.
+			--version : Muestra la versión del deb-downloader.									
 			--file : Nombres de los ficheros de donde leeremos las uris.		
 			--dd-root : Especifica el directorio de destino para descargar los paquetes .deb (directorio dd-root por
 			  defecto).
@@ -75,13 +79,17 @@ la segunda en una máquina con cualquier sistema operativo que tenga disponible u
 	- deb-downloader-install : Esta opció se usa para instalar los paquetes en /var/cache/apt/archives y, si se quiere, 
 		    	ejecutar apt-get dist-upgrade, apt-get install lo que sea o nada, como se quiera.
 		
-		deb-downloader-install --file=filename [-d|--debug] [install package1...packagen|dist-upgrade][--mirror-format] [--dd-root=directory]
+		deb-downloader-install --file=filename [-d|--debug] [install
+		package1...packagen|dist-upgrade][--mirror-format] [--dd-root=directorio] [--output-directory=directorio]
 		
 			-d|--debug : Sirve para ver mensajes extra de la ejecución. Importante para reportar bugs.
+			--help : Muestra la ayuda del deb-downloader.
+			--version : Muestra la versión del deb-downloader.									
 			--file : Nombre del fichero de donde leeremos las uris.		
 			--dd-root : Especifica el directorio de donde recogeremos los paquets .deb (directorio dd-root por defecto).
 			--mirror-format : Esta opción nos gravará los paquetes con el formato de directorios que tiene el servidor 
 			  (incompatible con la funcio dd-root no informada).		
+			--skip-action : Esta opción salta la acción (dist-upgrade o install loquesea).						  
 			install paquete1...paqueten : Seleccionar los paquetes a descargar (apt-get install loquesea).
 			dist-upgrade : Actualiza la distro (apt-get dist-upgrade).			  
 			copy-files : Sólo copia los archivos en el directorio especificado.
@@ -90,7 +98,7 @@ la segunda en una máquina con cualquier sistema operativo que tenga disponible u
  ERRORES, PARCHES, REQUERIMENTOS & SUGERENCIAS
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-	Por favor, reportad todos los errores, parches, requerimientos y sugerencias a mi (ktalanet@yahoo.es), será todo
+	Por favor, reportad todos los errores, parches, requerimientos y sugerencias a debdownloader@gmail.com, será todo
 bienvenido (si es muy interesante intentaré incluirlo en la siguiente "release".
 	Si quereis comentar algún tema adicional también podeis apuntaros a las listas de correo que encontrareis en la siguiente
 página web  --> http://deb-downloader.berlios.de/lists.php?lang=es .
