@@ -53,6 +53,7 @@
 use strict;
 
 use Net::HTTP;
+use HTTP::Status;
 use Net::FTP;
 
 use Cwd;
@@ -419,7 +420,7 @@ sub http_download(@) {
 	
 	for($i=0;$i<scalar(@lines);$i++) {
 	
-		$http_connection = Net::HTTP->new(Host => $host_name) || die "Error openning $host_name http_connection\n";
+		$http_connection = Net::HTTP->new(Host => $host_name) || print("Error openning $host_name http_connection\n") && return 0;
 		debug_print("----->$lines[$i]\n");
 		if ($lines[$i] =~ /([^\/]*)(\/[^ ]*\/)([^ \/]+\.deb)\' ([^ ]*) ([^ ]*) ([^ ]*)/) {
 			$deb_file = 1;
@@ -447,6 +448,17 @@ sub http_download(@) {
 			$http_connection->write_request(GET => $2.$3, 'User-Agent' => "Mozilla/5.0");
 			($code, $mess, %h) = $http_connection->read_response_headers;
 			
+			if ($code == RC_NOT_FOUND) {
+		   		print("not done\n");
+		   		print("File $3 doesn't exists in http server $host_name \n");
+		   		print("Execute this script with build option again in your Debian.\n");
+		   		return 0;
+			}
+			elsif ($code != RC_OK) {
+		   		print("Error in http get request with file $3 in server $host_name.\n");
+		   		return 0;				
+			}
+			
 			open(DEBFILE,">$3") or die "Error opening output file $3.\n";
 			binmode(DEBFILE);
 			
@@ -462,7 +474,7 @@ sub http_download(@) {
 		   		return 0;				
 			}
 			
-			print("done\n");
+			print("done\n\n");
 	
 			chdir($pwd);
 		}	
@@ -537,7 +549,7 @@ sub ftp_download(@) {
 			print("Downloading file $2$3 " . (($deb_file) ? "(" . human_printing($5) . ")" : "") . "...");
 			
 			# Checking if the file is available in the server.
-		   	@files = $ftp_connection->ls($2.$3) || print("\nError checking if file $3 exists in ftp server.") && return 0;
+		   	@files = $ftp_connection->ls($2.$3);
 		   	if (scalar(@files) == 0) {
 		   		print("not done\n");
 		   		print("File $3 doesn't exists in ftp server $host_name \n");
@@ -551,7 +563,7 @@ sub ftp_download(@) {
 				return 0;
 		   	}
 		   	
-			print("done\n"); 
+			print("done\n\n"); 
 			
 			chdir($pwd);					
 			
