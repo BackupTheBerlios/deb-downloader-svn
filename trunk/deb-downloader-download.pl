@@ -79,9 +79,8 @@ my %deb_downloader_options = (
 				"version"=>"N");
 			      
 my $sources_list_content = "";
-my @sources_list_content_lines = ();
+my @sources_list_lines = ();
 my $execution_directory = "";
-my @uri_files_to_download = "";
 
 ###############################################################################
 # Functions.
@@ -194,7 +193,61 @@ sub read_file($) {
 	
 }
 
-sub read_sources($) {
+#
+# Validating necessary information needed for right script execution.
+#
+sub validationsOK() {
+
+    if (length($deb_downloader_options{'file'}) == 0) {
+    	print("sources file has not been provided.\n");
+		return 0;
+	}
+
+	if (length($deb_downloader_options{'dd-root'}) == 0) {
+		print("root directory has not been filled.\n");
+		return 0;
+	}
+					 
+	return 1;
+
+}
+
+#
+# Parsing sources list lines getting only the uri lines (using regular expressions).
+#
+sub parse_sources_list() {
+	
+	my @lines;
+	my $i;
+	my $line_index;
+	
+	@lines = split(/\n+/, $sources_list_content);
+	$line_index = 0;
+	for($i=0;$i<scalar(@lines);$i++) {
+		if ($lines[$i] =~ /((?:ftp|http):\/\/.*)/) {
+			$sources_list_lines[$line_index] = $lines[$i];
+			$line_index++;			
+			
+		}
+		else {
+			debug_print("Error in line--->$lines[$i]\n");
+			return 0;
+		}
+	}
+	
+	if ($line_index == 0) {
+		print("No valid sentence in sources.list file.\n");
+		return 0;
+	}
+	
+	return 1;
+	
+}
+
+#
+# Getting the uris to download reading the sources files.
+#
+sub get_uris_to_download($) {
 
 	my @sources;
 	my $work;
@@ -218,61 +271,56 @@ sub read_sources($) {
 		$work = read_file($sources[$i]);
 		$contents .= $work;
 	}
-
-	return $contents;
+	
+	
+	# Returning uris sorted and duplicates removed.
+	return remove_duplicates_and_sort(split("\n", $contents));
 
 }
 
 #
-# Removing duplicated uris joined from diferent uri files.
+# Removing duplicated uris joined from diferent uris files and sort the file uris alphabetically.
 #
-sub remove_duplicates_and_sort() {
+sub remove_duplicates_and_sort(@) {
 
+	my @uris_to_process;
 	my %uris = ();
 	my $i;
 
-	for($i=0;$i<scalar(@sources_list_content_lines);$i++) {
-		$uris{$sources_list_content_lines[$i]} = "";
+	@uris_to_process = @_;
+	
+	# Removing duplicated values.
+	for($i=0;$i<scalar(@uris_to_process);$i++) {
+		$uris{$uris_to_process[$i]} = "";
 	}
 
-    @sources_list_content_lines = sort keys(%uris);
+	# Sorting uris.
+    @uris_to_process = sort keys(%uris);
+
+	print("Number of uris to process-->".scalar(@uris_to_process)."\n");
 	
 	debug_print("\n");
-	debug_print(" Files without duplicates.\n");
-	debug_print("~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+	debug_print("Files without duplicates.\n");
+	debug_print("Init of files without duplicates ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
 	
-	for($i=0;$i<scalar(@sources_list_content_lines);$i++) {
-		debug_print("File --->$sources_list_content_lines[$i]\n");
+	for($i=0;$i<scalar(@uris_to_process);$i++) {
+		debug_print("File --->$uris_to_process[$i]\n");
 	}
-
-}
-
-#
-# Validating necessary information needed for right script execution.
-#
-sub validationsOK() {
-
-    if (length($deb_downloader_options{'file'}) == 0) {
-    	print("sources file has not been provided.\n");
-		return 0;
-	}
-
-	if (length($deb_downloader_options{'dd-root'}) == 0) {
-		print("root directory has not been filled.\n");
-		return 0;
-	}
-					 
-	return 1;
+	
+	debug_print("End of files without duplicates ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~\n");
+	
+	return @uris_to_process;
 
 }
 
 #
 # Splits and return server part from an uri entered by param.
 #
-sub get_protocol_server_part($) {
+sub get_server_protocol($) {
 
 	my $line = shift;
 
+	debug_print("Line-->$line\n");
 
 	if ($line =~ /^\'((?:http|ftp):\/\/[^\/]*)\/[^ ]*\/[^ \/]+\.deb\' [^ ]* [^ ]* [^ ]*/) {
 		return $1;
@@ -289,7 +337,10 @@ sub get_protocol_server_part($) {
 }
 
 #
-# Downloading packages read in the file filled in --file option..
+# Downloading packages read in the file filled in --file option.
+# This function implements a programming structure called "control breaking". 
+# The uris are ordered alphabetically by server, so we break the flow for every
+# diferent server and call the download function once per server.
 #
 sub download_packages() {
 	
@@ -301,50 +352,54 @@ sub download_packages() {
 
 	$|=1;
 
-
+	# Validating the entered data.
     if (!validationsOK()) {
 		return 0;
 	}
 
+	# Creating the download directory if it doesn't exist.
 	if (! -e $deb_downloader_options{'dd-root'}) {
 		print("Creating deb-download root directory " . $deb_downloader_options{'dd-root'}  . "...");
 		mkpath($deb_downloader_options{'dd-root'}) or die return 0;
 		print("done\n");
 	}
 
+	# Going into the download directory.
 	print("Changing to deb-downloader root directory called " . $deb_downloader_options{'dd-root'} . "...");
 	chdir($deb_downloader_options{'dd-root'});
 	print("done\n");				
 			
-	$i = 0;
-	while($i<scalar(@sources_list_content_lines)) {
-		debug_print("source_line---------> $sources_list_content_lines[$i] \n");
-		$old_line = $sources_list_content_lines[$i];
+	$i = 0; # Counter used for processing all uris recollected.
+	# While we have uris to process ...
+	while($i<scalar(@sources_list_lines)) {
+		debug_print("source_line---------> $sources_list_lines[$i] \n");
+		$old_line = $sources_list_lines[$i];
 		@file_lines = ();
-		$j = 0;
-		while($i<scalar(@sources_list_content_lines) && get_protocol_server_part($sources_list_content_lines[$i]) eq get_protocol_server_part($old_line)) {
-			debug_print("old value ----> $old_line \n");
-			debug_print("part protocol server old value ---->" . get_protocol_server_part($old_line) . "\n");
-			debug_print("part protocol server sources line ---->" . get_protocol_server_part($sources_list_content_lines[$i]) . "\n");
-			debug_print("source_line--->$sources_list_content_lines[$i]\n");
-			$sources_list_content_lines[$i] =~ /^\'(?:ftp|http):\/\/(.*)/;
+		$j = 0; # Counter used for getting all the server uris.
+		debug_print("old value ----> $old_line \n");
+		# While we have uris to process and the uri's server part doesn't change ...
+		while($i<scalar(@sources_list_lines) && 
+			get_server_protocol($sources_list_lines[$i]) eq get_server_protocol($old_line)) {
+			debug_print("source_line--->$sources_list_lines[$i]\n");
+			$sources_list_lines[$i] =~ /^\'(?:ftp|http):\/\/(.*)/;
 			$file_lines[$j] = $1;
 			$j++;
 			$i++;
 		}
 
-		debug_print("-----------------------------------------------\n");
-		
+		# If the uri contains http uris, download files using http protocol.
 		if ($old_line =~ /^\'http:\/\/([^\/]*)(\/[^ ]*\/)([^ \/]+)\'/) {
 			if (!http_download($1, @file_lines)) {
 				return 0;
 			}
 		}
+		# If the uri contains ftp uris, download files using ftp protocol.		
 		elsif ($old_line =~ /^\'ftp:\/\/([^\/]*)(\/[^ ]*\/)([^ \/]+)\'/) {
 			if (!ftp_download($1, @file_lines)) {
 				return 0;
 			}			
 		}		
+		# else error (only http and ftp protocol suported).
 		else {
 			return 0;
 		}
@@ -352,41 +407,6 @@ sub download_packages() {
 	
 	
 	return 1;
-}
-
-sub parse_sources_list() {
-	
-	my @lines;
-	my $i;
-	my $line_index;
-	
-	@lines = split(/\n+/, $sources_list_content);
-	$line_index = 0;
-	for($i=0;$i<scalar(@lines);$i++) {
-		if ($lines[$i] =~ /((?:ftp|http):\/\/.*)/) {
-			$sources_list_content_lines[$line_index] = $lines[$i];
-			$line_index++;			
-			#debug_print("$lines[$i]--->Source line\n");
-			
-		}
-		elsif ($lines[$i] =~ /^#.*/) {
-			debug_print("$lines[$i]--->Comentary\n");
-		}
-		else {
-			debug_print("$lines[$i]--->Error\n");
-			return 0;
-		}
-	}
-	
-	if ($line_index == 0) {
-		print("No valid sentence in sources.list file.\n");
-		return 0;
-	}
-	
-	#@sources_list_content_lines = sort @sources_list_content_lines;
-	
-	return 1;
-	
 }
 
 #
@@ -626,29 +646,23 @@ elsif ($deb_downloader_options{'version'} eq YES) {
 	print_version();
 }
 else {
-	# Getting sources.list content
-	$sources_list_content = read_sources($deb_downloader_options{'file'});
-	#debug_print("sources_list-->$sources_list_content\n");
-	if (!$sources_list_content) {
-		deb_downloader_exit(1);		
-	}
+	# Getting source files content.
+	#$sources_list_content = read_source_files($deb_downloader_options{'file'});
+	#if (length($sources_list_content) == 0) {
+	#	print("Empty source files.\n");
+	#	deb_downloader_exit(0);		
+	#}
 	
-	# Parse sources.list getting the ftp and http server for downloading.
-	if (!parse_sources_list()) {
-		print("Error parsing sources.list.\n");
-		deb_downloader_exit(1);
-	}	
+	# Getting source files contents, parsing sources.list getting only the ftp 
+	# and http uris for downloading, sorted and duplicates removed.
+	@sources_list_lines = get_uris_to_download($deb_downloader_options{'file'});
 	
-	# Remove duplicate uris and sort them.
-	@uri_files_to_download = split(" ", $deb_downloader_options{'file'});
-	if (scalar(@uri_files_to_download) > 1) {
-		remove_duplicates_and_sort();
-	}
-	
+	# Downloading packages in dd-root directory.
 	if (!download_packages()) {
 		print("\nPackages downloaded NOK :-(\n\n");
 		deb_downloader_exit(1);		
 	}		
+	
 	print("\nPackages downloaded OK :-)\n\n");
 }
 

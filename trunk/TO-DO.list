@@ -10,6 +10,6 @@ Comentar millor el codi ara que està partit en tres.
 Repassar la modificacio que he fet rapid i corrent dels arxius ja baixats.
 Incloure comprovacio de checksum (fer tests).
 Mirar si els arxius de resum es poder recpuerar amb un apt-get update --print-uris enlloc de fer-ho tal i con es fa ara.
-Escriure un README en catala i castella i modificar el que està en angles.
+Escriure un README en catala i castella i modificar el que està en angles. --> Fet !!!!
 Modificar la web amb els nous canvis.
 Repassar codi en general.
